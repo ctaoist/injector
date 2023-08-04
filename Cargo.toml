@@ -1,0 +1,42 @@
+[package]
+author = "ctaoist <liao9256@163.com>"
+name = "injector"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[profile.release]
+strip = true
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = 'abort'
+
+[features]
+build-binary = ["clap", "simple_logger"]
+
+[dependencies]
+log = "*"
+
+clap = {version = "*", default-features = false, features = ["std", "derive", "help"], optional = true}
+simple_logger = {version = ">=4.2", features = ["timestamps"], optional = true }
+
+windows-sys = { version = "*", features = [
+    "Win32_Foundation",
+    "Win32_Globalization",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_Diagnostics_Debug",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Memory",
+    "Win32_System_Threading",
+    "Win32_System_ProcessStatus",
+    "Win32_Security",
+]}
+
+[dev-dependencies]
+simple_logger = {version = ">=4.2", features = ["timestamps"] }
+
+[[bin]]
+name = "injector"
+required-features = ["build-binary"]
