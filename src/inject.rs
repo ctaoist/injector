@@ -13,7 +13,7 @@ use windows_sys::Win32::{
     },
     LibraryLoader::{GetModuleHandleA, GetProcAddress},
     Memory::{VirtualAllocEx, MEM_COMMIT, PAGE_READWRITE},
-    Threading::{CreateRemoteThread, PROCESS_ALL_ACCESS},
+    Threading::{CreateRemoteThread, OpenProcess, PROCESS_ALL_ACCESS},
   },
 };
 
@@ -53,7 +53,12 @@ pub fn inject_dll<T: Into<PathBuf>>(pid: u32, dll_path: T) {
   let dll_path = dll_path.to_str().unwrap();
   unsafe {
     // 打开进程
-    let h = utils::open_process(pid, PROCESS_ALL_ACCESS).unwrap();
+    // let h = utils::open_process(pid, PROCESS_ALL_ACCESS).unwrap();
+    let h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    if h == 0 {
+      log::error!("进程打开失败，可能权限不足或者关闭了应用，errCode: {}", GetLastError());
+      return;
+    }
 
     //在进程内部申请内存
     let dll_addr = VirtualAllocEx(h, null(), dll_path.len() + 1, MEM_COMMIT, PAGE_READWRITE);
@@ -104,7 +109,12 @@ pub fn eject_dll<T: Into<PathBuf>>(pid: u32, dll_path: T) {
 
   unsafe {
     // 打开进程
-    let h = utils::open_process(pid, PROCESS_ALL_ACCESS).unwrap();
+    // let h = utils::open_process(pid, PROCESS_ALL_ACCESS).unwrap();
+    let h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    if h == 0 {
+      log::error!("进程打开失败，可能权限不足或者关闭了应用，errCode: {}", GetLastError());
+      return;
+    }
 
     // FreeLibrary FreeLibraryAndExitThread
     // let free_library = get_proc_addr("FreeLibrary\0").unwrap();
